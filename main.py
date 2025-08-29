@@ -52,6 +52,9 @@ class Game:
         self.camera_thread = None
         self.use_hand_control = False
 
+        self.level_completed = False
+
+
     def toggle_hand_control(self):
         if self.use_hand_control:
             self.stop_hand_control()
@@ -221,6 +224,9 @@ class Game:
                         self.toggle_hand_control()
                     elif event.key == pygame.K_r:
                         self.spawn_monsters()
+                        self.level_completed = False
+                    elif event.key == pygame.K_u:
+                        self.change_player_character()
                     elif event.key in [pygame.K_LEFT, pygame.K_a]:
                         if self.player_grid_x > 0:
                             self.player_grid_x -= 1
@@ -252,6 +258,19 @@ class Game:
             self.draw_aim_line()
             self.draw_bullets()
             self.draw_help_window()
+
+            if self.level_completed:
+                overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
+                overlay.set_alpha(180)
+                overlay.fill(BLACK)
+                self.screen.blit(overlay, (0, 0))
+
+                text1 = font.render("Well Done!", True, WHITE)
+                text2 = font.render("Press R to continue", True, WHITE)
+
+                self.screen.blit(text1, (SCREEN_WIDTH//2 - text1.get_width()//2, SCREEN_HEIGHT//2 - 40))
+                self.screen.blit(text2, (SCREEN_WIDTH//2 - text2.get_width()//2, SCREEN_HEIGHT//2 + 10))
+
             pygame.display.flip()
             self.clock.tick(30)  
 
@@ -326,6 +345,8 @@ class Game:
                     
                     self.bullets.remove(bullet)
                     break
+            if not self.monsters:
+                self.level_completed = True
 
 
     def draw_bullets(self):
@@ -396,6 +417,7 @@ class Game:
     "Mouse Click        -  Shoot",
     "C                  -  Toggle Hand Control",
     "R                  -  Respawn Monsters", 
+    "U                  -  Change Character",
     "H                  -  Toggle Help",
     "ESC                -  Exit Game",
     "",
@@ -424,6 +446,24 @@ class Game:
             if line:
                 self.screen.blit(text_surface, (window_x + 20, window_y + y_offset))
             y_offset += 20
+
+    def change_player_character(self):
+        character_folder = "assets/characters"
+        image_extensions = ['*.png', '*.jpg', '*.jpeg', '*.bmp', '*.gif']
+        character_files = []
+
+        for ext in image_extensions:
+            character_files.extend(glob.glob(os.path.join(character_folder, ext)))
+
+        if character_files:
+            new_character_file = random.choice(character_files)
+            try:
+                new_image = pygame.image.load(new_character_file)
+                new_image = pygame.transform.scale(new_image, (TILE_SIZE, TILE_SIZE+10))
+                self.player_image = new_image
+                print(f"Player character changed to {os.path.basename(new_character_file)}")
+            except pygame.error as e:
+                print(f"Error loading character {new_character_file}: {e}")
 
 if __name__ == "__main__":
     game = Game()
