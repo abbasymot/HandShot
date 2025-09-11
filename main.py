@@ -224,9 +224,15 @@ class Game:
     
     def draw_monsters(self):
         for monster in self.monsters:
-            pixel_x = monster.grid_x * TILE_SIZE
-            pixel_y = monster.grid_y * TILE_SIZE
-            self.screen.blit(monster.image, (pixel_x, pixel_y))
+            px = monster.grid_x * TILE_SIZE
+            py = monster.grid_y * TILE_SIZE
+            self.screen.blit(monster.image, (px, py))
+            ratio = monster.health / monster.max_health
+            bar_w = TILE_SIZE
+            bar_h = 6
+            pygame.draw.rect(self.screen, (60, 0, 0), (px, py - 8, bar_w, bar_h))
+            pygame.draw.rect(self.screen, (180, 0, 0), (px, py - 8, int(bar_w * ratio), bar_h))
+            pygame.draw.rect(self.screen, BLACK, (px, py - 8, bar_w, bar_h), 1)
     
     def draw_player(self):
         pixel_x = self.player_grid_x * TILE_SIZE
