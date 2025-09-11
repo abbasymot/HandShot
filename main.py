@@ -31,6 +31,8 @@ class Monster:
         self.image = image
         self.health = 1
         self.max_health = 1
+
+
 class Game:
     def __init__(self):
         self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -54,7 +56,30 @@ class Game:
 
         self.level_completed = False
 
-
+    def update_monsters(self, move_prob=0.02):
+        directions = [(1,0), (-1,0), (0,1), (0,-1)]
+        
+        occupied = {(m.grid_x, m.grid_y) for m in self.monsters}
+        player_pos = (self.player_grid_x, self.player_grid_y)
+        
+        for monster in self.monsters:
+            if random.random() < move_prob:
+                random.shuffle(directions)  
+                for dx, dy in directions:
+                    nx = monster.grid_x + dx
+                    ny = monster.grid_y + dy
+                    if not (0 <= nx < GRID_WIDTH and 0 <= ny < GRID_HEIGHT):
+                        continue
+                    if (nx, ny) == player_pos:
+                        continue
+                    if (nx, ny) in occupied:
+                        continue
+                    occupied.remove((monster.grid_x, monster.grid_y))
+                    monster.grid_x = nx
+                    monster.grid_y = ny
+                    occupied.add((nx, ny))
+                    break 
+   
     def toggle_hand_control(self):
         if self.use_hand_control:
             self.stop_hand_control()
@@ -248,6 +273,7 @@ class Game:
         
             self.update_bullets()
             self.update_hit_tiles()
+            self.update_monsters(move_prob=0.02)
             self.screen.fill(WHITE)
             self.draw_grid()
             if not self.show_help_window :
